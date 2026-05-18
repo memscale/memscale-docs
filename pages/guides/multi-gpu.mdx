@@ -1,0 +1,51 @@
+import { Callout } from 'nextra/components'
+
+# Multi-GPU
+
+<Callout type="warning">
+**MemScale v1.1.0 is focused on single-GPU training.** Multi-GPU support is
+on the roadmap but not a v1.1 feature. Read this page before using MemScale
+in a multi-GPU job.
+</Callout>
+
+## Current status
+
+MemScale's profiling, decision engine, and executor are designed and
+benchmarked for a **single GPU**. The
+[benchmark suite](/guides/benchmarking) runs on one RTX 3090, and the memory
+techniques (checkpointing, offloading, tiling) are applied per-process to
+one device.
+
+## Using MemScale on a multi-GPU machine
+
+If your machine has several GPUs but you train on **one of them**, MemScale
+works normally — pin the process to a device and wrap as usual:
+
+```python
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+import memscale
+model = memscale.wrap(model)
+```
+
+## Data-parallel / distributed training
+
+For `DistributedDataParallel` or multi-process data-parallel training,
+MemScale's per-layer memory optimizations have **not** been validated end to
+end in v1.1. Combining MemScale with DDP, FSDP, or DeepSpeed is **not a
+supported configuration** in this release. If you experiment with it, treat
+results as unverified and measure carefully.
+
+## Roadmap
+
+Broader multi-GPU and distributed support is targeted for **v1.3+**. The
+v1.2 cycle focuses on the [ML policy](/advanced/ml-policy) for single-GPU
+strategy selection.
+
+## Recommendation
+
+For now, the reliable path is: **one model, one GPU, one MemScale wrap.**
+If your model does not fit a single GPU even with `AGGRESSIVE` mode, see the
+[Memory Budget guide](/guides/memory-budget) to size the problem, or split
+the workload before reaching for multi-GPU.

@@ -1,0 +1,64 @@
+# Architecture
+
+A high-level view of how MemScale is structured, for users who want to
+understand what runs where.
+
+## The optimization pipeline
+
+Every optimized run flows through the same stages, described in
+[Core Concepts: Overview](/concepts/overview):
+
+```
+wrap() / optimize()
+      │
+      ▼
+  Profiler  ──►  Decision Engine  ──►  Execution Plan  ──►  Executor
+ (hardware +     (rule-based,                              (attaches
+  graph)          deterministic)                            hooks)
+```
+
+In v1.2 an opt-in [ML policy](/advanced/ml-policy) adds a *strategy
+selection* stage in front of the decision engine; the deterministic
+per-layer expansion is unchanged.
+
+## Two-tier model
+
+MemScale is built as a freemium product with a clean split:
+
+- **MemScale OSS** — the `pip install memscale` library. Core memory
+  optimization (checkpointing, offloading, tiling), the auto-tuner, the OOM
+  predictor, and the Hugging Face / Lightning integrations. Runs entirely on
+  **your** hardware with **no required network calls**.
+- **MemScale Pro / hosted services** — the dashboard at `app.memscale.id`
+  and the API at `api.memscale.id`, which add accounts, run history, and
+  team features on top of the library.
+
+The documentation you are reading covers the **OSS library**.
+
+## Runs locally, offline
+
+The library performs no mandatory network I/O. There is no API key. The
+only network feature is **opt-in anonymous telemetry**, which is off unless
+you enable it. Profiling, decision-making, and execution all happen
+in-process on your machine.
+
+## Distribution
+
+MemScale is published to PyPI as **pre-built, compiled wheels**. Performance-
+sensitive modules are Cython-compiled to native extensions rather than
+shipped as plain Python; the Python layer orchestrates them. This is why the
+PyPI package is binary and the source is not public during 2026 — see the
+[FAQ](/resources/faq).
+
+## Ecosystem and deployment
+
+The MemScale product spans four sites — the `memscale.id` landing site,
+this docs site (`docs.memscale.id`), the `app.memscale.id` dashboard, and
+the `api.memscale.id` backend. The public-facing sites sit behind a
+Cloudflare-fronted, layered network defense; the library itself, running on
+your hardware, is not part of that surface.
+
+## Where to go deeper
+
+See [Internals](/advanced/internals) for the module layout, or
+[Decision Engine](/concepts/decision-engine) for how plans are produced.

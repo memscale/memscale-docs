@@ -1,0 +1,68 @@
+# Quick Start
+
+This page takes you from a fresh install to an optimized training run in
+about five minutes.
+
+## 1. Install
+
+```bash
+pip install memscale
+```
+
+See [Installation](/getting-started/installation) for PyTorch and CUDA
+requirements.
+
+## 2. Wrap your model
+
+The whole integration is one line. Import `memscale`, then pass your model
+to `wrap()`:
+
+```python
+import memscale
+import torch
+from transformers import AutoModelForCausalLM
+
+model = AutoModelForCausalLM.from_pretrained("gpt2-medium")
+model = memscale.wrap(model)   # default config — balanced mode
+
+# train as usual
+optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
+
+for batch in dataloader:
+    loss = model(**batch).loss
+    loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+```
+
+`wrap()` profiles the model, builds a per-layer optimization plan, and
+attaches hooks. Your training loop does not change.
+
+## 3. What `wrap()` does
+
+With no `Config` argument, `wrap()` uses **balanced mode**: gradient
+checkpointing and CPU offloading are enabled, activation tiling is off.
+See [First Optimization](/getting-started/first-optimization) to customize
+this.
+
+## Before / after VRAM
+
+These are measured peak training VRAM figures on an **NVIDIA RTX 3090
+(24 GB)**, from the project's
+[benchmark suite](/guides/benchmarking):
+
+| Model         | Params | Batch × Seq | Baseline | MemScale | Reduction |
+| ------------- | ------ | ----------- | -------- | -------- | --------- |
+| BERT-Base     | 110M   | 16 × 128    | 3.14 GB  | 0.84 GB  | 73.1%     |
+| GPT-2 Medium  | 355M   | 4 × 512     | 10.87 GB | 2.61 GB  | 76.0%     |
+| GPT-2 Large   | 774M   | 2 × 512     | 14.87 GB | 4.68 GB  | 68.5%     |
+| GPT-2 XL      | 1.5B   | 1 × 512     | OOM      | 9.25 GB  | enables training |
+
+GPT-2 XL does not fit in 24 GB at all without MemScale; with it, the run
+trains in 9.25 GB.
+
+## Next steps
+
+- **[First Optimization](/getting-started/first-optimization)** — choose modes and tune `Config`.
+- **[Troubleshooting](/getting-started/troubleshooting)** — fix common errors.
+- **[Hugging Face guide](/guides/huggingface)** — wrap a `Trainer` directly.

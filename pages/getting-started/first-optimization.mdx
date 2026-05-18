@@ -1,0 +1,65 @@
+# First Optimization
+
+The [Quick Start](/getting-started/quickstart) used the default configuration.
+This page shows how to take control with a `Config` object.
+
+## Choosing a mode
+
+MemScale exposes three optimization modes through the `OptimizationMode`
+enum. The mode sets how aggressively the decision engine trades throughput
+for memory:
+
+```python
+from memscale import wrap, Config
+from memscale import OptimizationMode
+
+config = Config(mode=OptimizationMode.AGGRESSIVE)
+model = wrap(model, config)
+```
+
+## Mode trade-offs
+
+| Mode           | Goal                          | Typical cost |
+| -------------- | ----------------------------- | ------------ |
+| `CONSERVATIVE` | Small memory savings, lowest throughput hit | minimal slowdown |
+| `BALANCED`     | Default — solid savings, modest slowdown    | moderate     |
+| `AGGRESSIVE`   | Maximum memory savings        | highest slowdown |
+
+- **`CONSERVATIVE`** applies the cheapest techniques (mostly gradient
+  checkpointing) and is a good fit when your model nearly fits and you only
+  need to recover a little headroom.
+- **`BALANCED`** is the default. It enables checkpointing and CPU offloading
+  and is the right starting point for most medium-sized models.
+- **`AGGRESSIVE`** layers on the full technique stack to fit models that
+  otherwise OOM. Expect a noticeable throughput cost in exchange.
+
+See [Optimization Modes](/concepts/modes) for the techniques each mode pulls in.
+
+## Customizing beyond the mode
+
+`Config` fields override individual techniques regardless of mode. For
+example, to use the balanced mode but also turn on mixed precision:
+
+```python
+config = Config(
+    mode=OptimizationMode.BALANCED,
+    use_mixed_precision=True,
+)
+model = wrap(model, config)
+```
+
+The full field list — including `enable_checkpointing`, `enable_offloading`,
+`enable_tiling`, `use_8bit_optimizer`, `max_cpu_offload_gb`, and
+`target_gpu_utilization` — is documented on the [`Config`](/api/config) page.
+
+## Verifying it worked
+
+`wrap()` logs the detected hardware and the optimization plan it built. To
+see this output, make sure logging is enabled (it is, by default — see
+`Config.enable_logging`). The log shows which layers received which
+technique.
+
+## Next steps
+
+- **[Core Concepts: Overview](/concepts/overview)** — how the plan is built.
+- **[Memory Budget guide](/guides/memory-budget)** — pick a mode by model size.

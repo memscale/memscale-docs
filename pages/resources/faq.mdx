@@ -1,0 +1,67 @@
+# FAQ
+
+## How is MemScale different from DeepSpeed or Accelerate?
+
+DeepSpeed and Accelerate are powerful, but they ask you to restructure your
+training code and choose strategies — ZeRO stages, sharding, accelerator
+config — before you see a benefit.
+
+MemScale optimizes for the shortest path from "my model OOMs" to "my model
+trains." You call [`wrap()`](/api/wrap) and keep your training loop
+unchanged. It is focused on **single-GPU** memory optimization (see the
+[Multi-GPU guide](/guides/multi-gpu)), where it picks per-layer techniques
+for you automatically. If you need cluster-scale sharding, a framework like
+DeepSpeed remains the right tool.
+
+## Is MemScale production ready?
+
+v1.1.0 is a stable release with empirically-backed, reproducible benchmark
+numbers committed to the codebase (see [Benchmarking](/guides/benchmarking)).
+The core techniques — checkpointing, offloading, tiling — are production
+paths. Features explicitly labelled **experimental** — async CPU offload,
+and the v1.2 [ML policy](/advanced/ml-policy) — are off by default and
+should be treated as such.
+
+## Is the source code available?
+
+MemScale is distributed as **pre-built, compiled binary wheels on
+[PyPI](https://pypi.org/project/memscale/)**. The source is **closed during
+2026** — performance-sensitive modules are Cython-compiled to native
+extensions. You install and use the library normally; you just do not get
+the source tree.
+
+## Can I use MemScale commercially?
+
+Yes — the MemScale library is free to use under its license. See the
+[MemScale license](https://memscale.id/license/) for the exact terms.
+
+## What telemetry does MemScale collect?
+
+By default, **none.** MemScale runs fully offline and needs no API key.
+
+Telemetry is **opt-in**. When you enable it, MemScale records anonymous,
+bucketed, non-identifying metadata — architecture class, parameter-count
+buckets, which techniques were selected — used to improve optimization
+decisions and to build the training corpus for the v1.2
+[ML policy](/advanced/ml-policy). It never collects your data, weights, or
+code. See the [privacy policy](https://memscale.id/privacy/) for full terms.
+
+## How do I contribute?
+
+Because the source is closed during 2026, MemScale does not currently take
+outside code contributions. The most useful things you can do:
+
+- File issues and feature requests through the project's GitHub.
+- Enable opt-in telemetry, which directly informs optimization decisions.
+- Share benchmark results from your own hardware.
+
+## MemScale optimized nothing — why?
+
+For a small model on a large GPU there is nothing to gain, so the decision
+engine skips optimization by design. Force it with `force_optimize=True` —
+see [Troubleshooting](/getting-started/troubleshooting).
+
+## Where do I get help?
+
+Start with [Troubleshooting](/getting-started/troubleshooting). For anything
+else, use the [contact page](https://app.memscale.id/contact).

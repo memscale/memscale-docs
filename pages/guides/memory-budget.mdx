@@ -1,0 +1,78 @@
+# Memory Budget
+
+A practical guide to estimating how much VRAM a training run needs, and
+which MemScale mode brings it within your GPU's budget.
+
+## What consumes VRAM in training
+
+Peak training memory is the sum of four parts:
+
+1. **Model parameters** — the weights themselves.
+2. **Gradients** — one value per parameter.
+3. **Optimizer state** — Adam/AdamW keeps two moments per parameter.
+4. **Activations** — intermediate tensors held for the backward pass. This
+   term scales with batch size and sequence length and is usually the
+   *largest* and most variable part.
+
+MemScale's techniques target parts 3 and 4: checkpointing and tiling cut
+activations, offloading moves optimizer state and activations to CPU, and
+the 8-bit optimizer shrinks optimizer state.
+
+## Rough rule of thumb (FP32, Adam)
+
+Without optimization, a rough estimate for parameters + gradients +
+optimizer state alone is **~16 bytes per parameter**:
+
+| Model size | Params + grads + Adam state | Plus activations | Practical GPU (unoptimized) |
+| ---------- | --------------------------- | ---------------- | --------------------------- |
+| 110M (BERT-Base)   | ~1.8 GB  | + a few GB | 8 GB is tight |
+| 355M (GPT-2 Medium)| ~5.7 GB  | + several GB | 12–16 GB |
+| 774M (GPT-2 Large) | ~12 GB   | + several GB | 16–24 GB |
+| 1.5B (GPT-2 XL)    | ~24 GB   | + several GB | OOM on 24 GB |
+
+Activations push the real peak well above the table's first column — which
+is exactly where MemScale helps.
+
+## Measured reductions (RTX 3090, 24 GB)
+
+From the [benchmark suite](/guides/benchmarking), with the default config:
+
+| Model        | Batch × Seq | Baseline | MemScale | Reduction |
+| ------------ | ----------- | -------- | -------- | --------- |
+| BERT-Base    | 16 × 128    | 3.14 GB  | 0.84 GB  | 73.1%     |
+| BERT-Large   | 16 × 128    | 7.60 GB  | 2.02 GB  | 73.4%     |
+| GPT-2 Medium | 4 × 512     | 10.87 GB | 2.61 GB  | 76.0%     |
+| GPT-2 Large  | 2 × 512     | 14.87 GB | 4.68 GB  | 68.5%     |
+| GPT-2 XL     | 1 × 512     | OOM      | 9.25 GB  | fits      |
+
+## Choosing a mode by budget
+
+Estimate your unoptimized peak, then compare to your GPU:
+
+| Situation | Recommended mode |
+| --------- | ---------------- |
+| Unoptimized peak is **below** your VRAM | none needed — or `CONSERVATIVE` for headroom |
+| Peak is **1–1.5×** your VRAM | `BALANCED` |
+| Peak is **1.5–3×** your VRAM | `AGGRESSIVE` |
+| Peak is **more than ~3×** your VRAM | `AGGRESSIVE` + reduce batch size / sequence length |
+
+See [Optimization Modes](/concepts/modes) for what each mode enables.
+
+## When you need `AGGRESSIVE` vs. `BALANCED`
+
+- **`BALANCED`** (checkpointing + offloading) is enough for most medium
+  models that overshoot VRAM by a moderate margin.
+- **`AGGRESSIVE`** (full stack, including tiling and the 8-bit optimizer)
+  is for models that otherwise OOM — like GPT-2 XL on a 24 GB card.
+- If `AGGRESSIVE` still OOMs, the budget gap is too large for memory
+  techniques alone: lower the batch size or sequence length, per
+  [Troubleshooting](/getting-started/troubleshooting).
+
+## Practical advice for fixed GPUs
+
+On a single fixed card — a workstation or campus GPU — the workflow is:
+
+1. Estimate the unoptimized peak from the table above.
+2. Pick a mode from the budget table.
+3. Run, and read the plan MemScale logs.
+4. If it OOMs, drop batch size first; it is the cheapest lever.

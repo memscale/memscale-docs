@@ -1,0 +1,51 @@
+# `detach()`
+
+Remove MemScale optimization from a model, restoring it to its original
+state.
+
+## Signature
+
+```python
+memscale.detach(model)
+```
+
+## Parameters
+
+| Parameter | Type        | Default | Description |
+| --------- | ----------- | ------- | ----------- |
+| `model`   | `nn.Module` | —       | A model previously passed to [`wrap()`](/api/wrap). |
+
+## Returns
+
+`None`.
+
+## Behavior
+
+`detach()` looks for the executor handle that [`wrap()`](/api/wrap) stored on
+the model (`model._memscale_executor`):
+
+- **If present** — the executor detaches all hooks, the handle is removed,
+  and the model returns to its unoptimized state. An info message is logged.
+- **If absent** — the model was never wrapped. `detach()` does nothing and
+  logs a warning. It does not raise.
+
+## Example
+
+```python
+import memscale
+
+model = memscale.wrap(model)
+# ... train ...
+
+memscale.detach(model)   # model is now back to its original form
+```
+
+## When you do not need it
+
+If you used the [`optimize()`](/api/optimize) context manager, detachment
+happens automatically when the `with` block exits — calling `detach()`
+yourself is unnecessary in that case.
+
+`detach()` is useful when you wrapped a model with `wrap()` and later want to
+run it — for inference or evaluation — without the training-time memory
+hooks attached.

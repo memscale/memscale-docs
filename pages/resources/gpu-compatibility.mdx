@@ -1,0 +1,52 @@
+# GPU Compatibility
+
+Which GPUs MemScale runs on, and what to expect on each class of hardware.
+
+## Compatibility matrix
+
+| GPU | VRAM | Status | Notes |
+| --- | ---- | ------ | ----- |
+| RTX 30xx (3060 / 3070 / 3080 / 3090) | 12–24 GB | ✅ Full support | BF16 native |
+| RTX 40xx series | 16–24 GB | ✅ Full support | BF16 native |
+| RTX 20xx (2060 / 2070 / 2080) | 6–11 GB | ⚠️ Partial | FP16 fallback (no BF16) |
+| GTX 16xx (1660 / 1660 Ti) | 6 GB | ⚠️ Limited | No BF16/FP16 acceleration |
+| GTX 10xx (1060 / 1070 / 1080) | 6–11 GB | ⚠️ Basic | Checkpointing + offloading only |
+| A100 / H100 (data center) | 40–80 GB | ✅ Full support | Optimal |
+| V100 | 16–32 GB | ✅ Full support | No BF16 (FP16 only) |
+
+## Reading the status column
+
+- **✅ Full support** — every MemScale technique works, including BF16 mixed
+  precision where the table notes "BF16 native."
+- **⚠️ Partial / Limited / Basic** — MemScale runs, but some techniques are
+  reduced. The most common limitation is **precision**: cards without BF16
+  hardware fall back to FP16, and the oldest cards have no 16-bit
+  acceleration at all — there, rely on gradient checkpointing and CPU
+  offloading instead of mixed precision.
+
+## Precision support, briefly
+
+- **BF16** — preferred. Native on RTX 30xx, RTX 40xx, A100, H100.
+- **FP16** — fallback on RTX 20xx and V100. Works, but has a narrower
+  dynamic range than BF16.
+- **No 16-bit acceleration** — GTX 16xx/10xx. Use checkpointing and
+  offloading; leave `use_mixed_precision=False`.
+
+See [Techniques](/concepts/techniques) for how precision interacts with the
+other optimizations.
+
+## Campus / workstation recommendation
+
+For a single fixed training GPU — a lab machine, a campus card, or a
+personal workstation — the **sweet spot is an 8–12 GB GPU, RTX 30xx or
+newer**. That gives native BF16, the full technique stack, and enough VRAM
+for MemScale to fit meaningfully larger models than the card could handle
+unoptimized.
+
+## CPU-only hosts
+
+MemScale imports and runs without a GPU — useful for inspecting plans or
+running tests — but the memory optimizations only take effect when a CUDA
+device is present. With `auto_policy=True` on a CPU-only host, Stage 1 of
+the [ML policy](/advanced/ml-policy) is skipped, since there is no VRAM
+pressure to reason about.

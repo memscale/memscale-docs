@@ -1,0 +1,87 @@
+import { Callout } from 'nextra/components'
+
+# ML Policy
+
+<Callout type="warning">
+**Experimental.** The ML policy ships with **v1.2** and is **off by
+default** (`auto_policy=False`). v1.1.0 — the current release — uses the
+rule-based engine only. This page documents intended v1.2 behavior.
+</Callout>
+
+## Why a policy stage at all
+
+MemScale's [decision engine](/concepts/decision-engine) is rule-based and
+deterministic. It is reliable, but the *high-level strategy* it starts from
+— which mode, which techniques are eligible — is a fixed rule. The v1.2 ML
+policy makes that first choice learnable, while keeping the deterministic
+per-layer expansion underneath.
+
+## Two-stage design
+
+v1.2 splits the decision into two stages:
+
+```
+Config + profiled model
+        │
+        ▼
+  Stage 1 — strategy selection      ◄── ML policy (this page), opt-in
+        │   picks mode + eligible techniques
+        ▼
+  Stage 2 — per-layer expansion     ◄── rule engine, unchanged & deterministic
+        │   expands strategy into the execution plan
+        ▼
+   Execution plan
+```
+
+**Stage 1** chooses the strategy. **Stage 2** is the existing v1.1 rule
+engine — unchanged, deterministic, and always the part that produces the
+actual per-layer plan.
+
+## Opting in
+
+Stage 1 is gated behind `Config.auto_policy`:
+
+```python
+from memscale import Config
+
+config = Config(auto_policy=True)   # opt in to Stage 1
+```
+
+- `auto_policy=False` (**default**) — Stage 1 is skipped. Your `Config` is
+  used exactly as written — bit-for-bit v1.1 behavior, which keeps
+  explicit-config benchmarks reproducible.
+- `auto_policy=True` — Stage 1 runs **if a GPU is present**. On a CPU-only
+  host there is no VRAM pressure to reason about, so it falls back to your
+  `Config`.
+
+## `decision_source`
+
+Every strategy decision records where it came from, via `decision_source`:
+
+| Value | Meaning |
+| ----- | ------- |
+| `user_config`   | Stage 1 was skipped — your `Config` used as-is. |
+| `ml`            | The trained ML policy selected the strategy. |
+| `rule_fallback` | The ML policy was unavailable; the rule-based policy was used inside Stage 1. |
+| `rule`          | The rule-based policy produced the strategy. |
+
+When `auto_policy=True` and the ML artifact is not available, MemScale
+raises `PolicyFallbackNeeded` internally and falls back to the rule-based
+policy — recorded as `rule_fallback`. This is the expected path until a
+trained artifact ships.
+
+## Honest framing
+
+<Callout type="info">
+The ML policy is **experimental**, ships in **v1.2**, and **defaults to
+off**. It only influences Stage 1 (strategy selection). The deterministic
+rule engine still produces the final per-layer plan. If you need fully
+reproducible runs today, leave `auto_policy=False`.
+</Callout>
+
+## Privacy
+
+The policy work is supported by **opt-in, anonymous telemetry** — it is not
+collected unless you enable it. MemScale runs fully offline and requires no
+API key. See the [FAQ](/resources/faq) for what telemetry covers, and the
+[MemScale privacy policy](https://memscale.id/privacy/) for the full terms.

@@ -1,0 +1,61 @@
+# MemScale Documentation
+
+**Memory Engineering for AI — Optimize PyTorch training memory.**
+
+MemScale lets you train bigger models on the GPU you already have. It is a
+drop-in memory optimizer for PyTorch training: one function call rewrites how
+your model uses VRAM, with no change to your training loop.
+
+## What is MemScale?
+
+MemScale is a Python library that reduces the peak VRAM of PyTorch training
+runs. You hand it a model (or a Hugging Face `Trainer`), and it profiles the
+model, decides a per-layer optimization plan, and attaches the necessary
+hooks — all behind a single `wrap()` call.
+
+Under the hood MemScale applies well-understood memory techniques —
+gradient checkpointing, mixed precision, CPU offloading, activation tiling,
+and 8-bit optimizers — but it chooses *which* technique to apply to *which*
+layer for you. The decision is made by a deterministic, rule-based engine,
+so the same model and hardware always produce the same plan.
+
+The current release is **v1.1.0 ("The Performance Release")**, published
+2026-05-17. It ships empirically-backed benchmark numbers (see
+[Benchmarking](/guides/benchmarking)) and an experimental async CPU offload
+engine. v1.2 is in development and adds an opt-in
+[ML-assisted policy](/advanced/ml-policy) on top of the existing rule engine.
+
+## Why MemScale?
+
+Frameworks like DeepSpeed and Accelerate are powerful, but they ask you to
+restructure your training code, manage config files, and understand
+ZeRO stages or sharding strategies before you see a benefit.
+
+MemScale optimizes for a different goal: **the shortest path from "my model
+OOMs" to "my model trains."** You do not rewrite your loop. You do not pick
+a sharding strategy. You call `wrap()` and keep training as usual. If you
+later want control, the [`Config`](/api/config) object exposes every knob.
+
+This makes MemScale a good fit for single-GPU workstations, lab machines,
+and campus GPUs — where the constraint is one fixed card, not a cluster.
+
+## Quick example
+
+```python
+import memscale
+from transformers import AutoModelForCausalLM
+
+model = AutoModelForCausalLM.from_pretrained("gpt2-medium")
+model = memscale.wrap(model)   # profiles + attaches optimization hooks
+
+# train exactly as you would without MemScale
+```
+
+On an RTX 3090, GPT-2 Medium training drops from **10.87 GB to 2.61 GB**
+peak VRAM — a 76% reduction — with no other change to the script.
+
+## Where to go next
+
+- **[Quick Start](/getting-started/quickstart)** — get a model optimized in 5 minutes.
+- **[API Reference](/api/overview)** — every public function and its real signature.
+- **[Core Concepts](/concepts/overview)** — how the decision engine and techniques work.

@@ -1,0 +1,59 @@
+import { Callout } from 'nextra/components'
+
+# Changelog
+
+A summary of MemScale releases. The authoritative, always-current changelog
+lives at **[memscale.id/changelog](https://memscale.id/changelog/)**.
+
+## v1.2.0 — Unreleased — "Intelligence Foundation"
+
+<Callout type="warning">
+**Experimental / in development.** v1.2 is a draft cycle targeted for the
+end of June 2026. Nothing in it is released, and the
+[ML policy](/advanced/ml-policy) ships **off by default**.
+</Callout>
+
+The v1.2 cycle builds the data and framework foundation for an ML-trained
+optimization policy:
+
+- A two-stage optimization flow — Stage 1 strategy selection, Stage 2 the
+  existing rule engine. Opt-in via `Config.auto_policy=True`.
+- Expanded **opt-in** v2 telemetry: bucketed, non-identifying model and
+  decision metadata to serve as a training corpus.
+
+## v1.1.0 — 2026-05-17 — "The Performance Release"
+
+The first release with empirically-backed, reproducible benchmark numbers
+committed to the codebase.
+
+- **Experimental async CPU offload** — `wrap(model, async_offload=True)`
+  enables a tier-aware async offload engine. Default off; existing users
+  unaffected. Also settable via `MEMSCALE_ASYNC_OFFLOAD=1`.
+- **Benchmark CLI** — `python -m memscale.benchmarks`, a reproducible VRAM
+  benchmark suite over a registry of standard models.
+- The Hugging Face `Trainer` integration now reports real samples/sec
+  throughput (previously hard-coded to `0.0`).
+- `estimate_savings()` now defaults to an honest same-GPU cost comparison.
+
+## v1.0.x — May 2026
+
+- **v1.0.4** (2026-05-15) and **v1.0.3** (2026-05-15) — stability and
+  correctness fixes, including auto-disabling HuggingFace `use_cache` when
+  activation checkpointing is enabled, to avoid a recompute shape mismatch.
+- **v1.0.2** (2026-05-12) — no API key required; the library works fully
+  offline. Optional anonymous opt-in telemetry introduced.
+- **v1.0.1** (2026-05-09) — post-launch fixes.
+- **v1.0.0** (2026-05-09) — **Library Launch.**
+
+## Earlier (0.x)
+
+- **v0.3.0** (2026-04-26) — "Production Foundations."
+- **v0.2.0** (2026-04-26).
+- **v0.1.0** (2026-04-26) — Initial public release.
+
+## Versioning
+
+MemScale follows [Semantic Versioning](https://semver.org/). The public API
+surface — `wrap`, `optimize`, `detach`, `Config`, `OptimizationMode` — is
+what semantic-versioning guarantees apply to; internal modules may change
+between releases.

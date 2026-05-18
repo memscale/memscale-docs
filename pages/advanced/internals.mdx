@@ -1,0 +1,69 @@
+import { Callout } from 'nextra/components'
+
+# Internals
+
+A map of MemScale's internal modules, for contributors and researchers who
+want to understand the library below the public API.
+
+<Callout type="info">
+Everything on this page is **internal**. Only the names documented in the
+[API Reference](/api/overview) — `wrap`, `optimize`, `detach`, `Config`,
+`OptimizationMode` — are the stable public surface. Internal modules can
+change between releases.
+</Callout>
+
+## Module layout
+
+The `memscale` package is organized into focused subpackages:
+
+| Area | Responsibility |
+| ---- | -------------- |
+| `core` | Profiler, decision engine, executor, and `Config` — the optimization pipeline. |
+| `policy` | The v1.2 two-stage strategy selection (`StrategyContext`, `StrategyDecision`, rule-based and trained policies). |
+| `offload` | The experimental async CPU offload engine and `AsyncOffloadConfig`. |
+| `techniques` | Implementations of the individual memory techniques. |
+| `integrations` | Hugging Face `Trainer` and PyTorch Lightning adapters. |
+| `observability` | Logging and optional Prometheus metrics. |
+| `autotuning` | The `AutoTuner`. |
+| `benchmarks` | The reproducible benchmark suite behind `python -m memscale.benchmarks`. |
+
+## The pipeline, module by module
+
+1. **`core.profiler` — `MemoryProfiler`.** Detects hardware (GPU count,
+   VRAM) and profiles the model graph. Prefers `torch.fx` static analysis
+   (`use_static_profiling`); falls back to empirical runtime profiling
+   (`use_empirical_fallback`).
+2. **`core.decision_engine` — `DecisionEngine`.** Consumes the profiled
+   graph and hardware, produces the per-layer execution plan. Rule-based
+   and deterministic.
+3. **`core.executor` — `Executor`.** Applies the plan by attaching hooks,
+   and stores itself on the model as `model._memscale_executor` so
+   [`detach()`](/api/detach) can reverse everything.
+
+## The v1.2 two-stage flow
+
+`api.py` implements the two-stage flow described in
+[ML Policy](/advanced/ml-policy):
+
+- **Stage 1 — `_select_strategy()`.** Opt-in via `Config.auto_policy`.
+  Returns a `StrategyDecision` plus an *effective config* (a derived copy —
+  the caller's `Config` is never mutated).
+- **Stage 2 — `DecisionEngine`.** The unchanged v1.1 rule engine, run on
+  the effective config.
+
+When `auto_policy=False`, Stage 1 is synthesized directly from the caller's
+`Config` with `decision_source="user_config"`.
+
+## Telemetry
+
+`_telemetry` emits schema-v2 events (`wrap_called`, …) carrying bucketed,
+non-identifying metadata — architecture class, parameter buckets, technique
+selection. It is **opt-in** and wrapped so that telemetry can never break a
+`wrap()` call.
+
+## Reversibility
+
+Because the `Executor` is stored on the model and only *attaches* hooks
+(rather than rewriting weights), optimization is fully reversible — that is
+what makes [`detach()`](/api/detach) and the [`optimize()`](/api/optimize)
+context manager safe.

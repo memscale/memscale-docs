@@ -1,0 +1,54 @@
+# Decision Engine
+
+The decision engine is the part of MemScale that turns "a profiled model on
+this hardware" into "this layer gets checkpointing, that one gets
+offloading." It is the second of the [three layers](/concepts/overview).
+
+## Rule-based and deterministic
+
+The engine is **rule-based**. It does not learn, sample, or randomize: given
+the same model graph, the same hardware, and the same `Config`, it produces
+the same execution plan every time.
+
+This is a deliberate design choice:
+
+- **Predictability.** You can reason about what MemScale will do before you
+  run it, and reproduce a run exactly.
+- **Debuggability.** When a plan looks wrong, the rule that produced it can
+  be traced — there is no opaque model in the path.
+- **Reproducible benchmarks.** Benchmark numbers stay stable across runs,
+  which is why the [benchmark suite](/guides/benchmarking) can commit exact
+  figures.
+
+## What it consumes
+
+The engine takes three inputs:
+
+1. **The profiled model graph** — layers and their estimated memory cost,
+   from the profiler.
+2. **The detected hardware** — GPU count and total VRAM.
+3. **The effective `Config`** — mode plus any per-technique overrides.
+
+## Memory pressure estimation
+
+The engine estimates how much VRAM the run would need unoptimized and
+compares it to what the GPU has. That ratio — the **memory pressure** —
+drives how many layers receive heavier techniques. Low pressure: a light
+touch (or, for tiny models on big GPUs, the run is skipped entirely unless
+`force_optimize=True`). High pressure: the engine reaches for offloading and
+tiling across more layers.
+
+## Per-layer plan generation
+
+The engine walks the layers and assigns each one a set of techniques
+according to its cost and the current pressure. The result is the
+**execution plan**, which the [executor](/concepts/overview#3-executor)
+applies. `wrap()` logs a summary of this plan.
+
+## Relationship to the v1.2 ML policy
+
+v1.2 introduces an optional [ML policy](/advanced/ml-policy) as a *first
+stage*. That stage only picks the high-level strategy (mode and which
+techniques are eligible). The per-layer expansion described here — the rule
+engine — is unchanged and still deterministic. The ML stage is **off by
+default** (`auto_policy=False`).

@@ -1,0 +1,50 @@
+# Installation
+
+## Requirements
+
+| Requirement | Minimum | Recommended |
+| ----------- | ------- | ----------- |
+| Python      | 3.10    | 3.11        |
+| PyTorch     | 2.0     | 2.2+        |
+| CUDA        | 11.8    | 12.1+       |
+| OS          | Linux / Windows / macOS | Linux |
+
+A CUDA-capable GPU is recommended. MemScale also imports and runs on
+CPU-only hosts — useful for inspecting plans — but the memory optimizations
+only take effect when a GPU is present.
+
+## Install via pip
+
+```bash
+pip install memscale
+```
+
+MemScale is distributed as pre-built wheels on
+[PyPI](https://pypi.org/project/memscale/). Installing it does **not** pull
+in PyTorch — install the PyTorch build that matches your CUDA version first,
+following the [official PyTorch instructions](https://pytorch.org/get-started/locally/).
+
+## Verify the install
+
+```bash
+python -c "import memscale; print(memscale.__version__)"
+```
+
+This should print the installed version (for example, `1.1.0`).
+
+## Optional dependencies
+
+| Package        | Enables                                  | Install |
+| -------------- | ---------------------------------------- | ------- |
+| `bitsandbytes` | 8-bit optimizers (Adam8bit, AdamW8bit)   | `pip install bitsandbytes` |
+| `transformers` | Hugging Face `Trainer` integration       | `pip install transformers` |
+
+The 8-bit optimizer path is only used when you set
+[`use_8bit_optimizer=True`](/api/config) in your `Config`. If `bitsandbytes`
+is not installed, MemScale falls back to a standard optimizer and logs a
+notice — it will not crash your run.
+
+## Next step
+
+Continue to the **[Quick Start](/getting-started/quickstart)** to optimize
+your first model.

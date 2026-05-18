@@ -1,0 +1,73 @@
+import { Callout } from 'nextra/components'
+
+# Benchmarking
+
+MemScale ships a reproducible benchmark suite so you can measure VRAM
+savings on standard models — and on your own.
+
+## The benchmark CLI
+
+Run the built-in suite with:
+
+```bash
+python -m memscale.benchmarks
+```
+
+This runs MemScale over a registry of standard models (`BENCHMARK_MODELS`)
+and reports baseline vs. optimized peak VRAM for each. The suite was added
+in v1.1.0 as the basis for the project's committed, reproducible numbers.
+
+## Canonical results
+
+These are the v1.1.0 figures, measured on an **NVIDIA RTX 3090 (24 GB)**.
+Peak training VRAM is compared with and without MemScale:
+
+| Model        | Params | Batch × Seq | Baseline VRAM | MemScale VRAM | Reduction |
+| ------------ | ------ | ----------- | ------------- | ------------- | --------- |
+| BERT-Base    | 110M   | 16 × 128    | 3.14 GB       | 0.84 GB       | 73.1%     |
+| BERT-Large   | 340M   | 16 × 128    | 7.60 GB       | 2.02 GB       | 73.4%     |
+| GPT-2 Medium | 355M   | 4 × 512     | 10.87 GB      | 2.61 GB       | 76.0%     |
+| GPT-2 Large  | 774M   | 2 × 512     | 14.87 GB      | 4.68 GB       | 68.5%     |
+| GPT-2 XL     | 1.5B   | 1 × 512     | OOM           | 9.25 GB       | enables training |
+
+GPT-2 XL does not fit the 24 GB baseline at all; with MemScale it trains in
+9.25 GB.
+
+<Callout type="info">
+Reduction **percentages depend on the workload** — model, batch size, and
+sequence length. Older marketing figures used different baselines, so they
+differ from the numbers above. Always trust a measurement on your own
+configuration over any single quoted percentage.
+</Callout>
+
+## Benchmarking your own model
+
+To measure savings for a model that is not in the registry, compare peak
+VRAM yourself:
+
+```python
+import torch
+import memscale
+
+# --- baseline ---
+torch.cuda.reset_peak_memory_stats()
+run_one_training_step(model)            # your own step
+baseline = torch.cuda.max_memory_allocated() / 1e9
+
+# --- with MemScale ---
+model = memscale.wrap(model)
+torch.cuda.reset_peak_memory_stats()
+run_one_training_step(model)
+optimized = torch.cuda.max_memory_allocated() / 1e9
+
+print(f"baseline {baseline:.2f} GB -> memscale {optimized:.2f} GB")
+print(f"reduction: {100 * (1 - optimized / baseline):.1f}%")
+```
+
+## Tips for fair comparison
+
+- Measure **peak** VRAM (`max_memory_allocated`), not current usage.
+- Call `torch.cuda.reset_peak_memory_stats()` before each measured run.
+- Use the **same batch size and sequence length** for both runs.
+- Warm up first — the first step allocates caches that distort the peak.
+- Make sure no other process holds VRAM (`nvidia-smi`).

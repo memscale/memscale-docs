@@ -1,0 +1,70 @@
+# Techniques
+
+MemScale's executor draws on five memory techniques. The
+[decision engine](/concepts/decision-engine) chooses which ones apply to
+which layers; this page explains what each one does and what it costs.
+
+## Gradient checkpointing
+
+**What it does.** Instead of keeping every intermediate activation in memory
+for the backward pass, checkpointing keeps only a subset and *recomputes*
+the rest during backpropagation.
+
+**When to use it.** Almost always — it is the workhorse technique and is
+enabled by default (`enable_checkpointing=True`). It gives a large memory
+saving on deep models.
+
+**Cost.** Extra forward compute during the backward pass — typically a
+20–35% throughput reduction, depending on how many layers are checkpointed.
+
+## Mixed precision (BF16 / FP16)
+
+**What it does.** Runs compute in a 16-bit floating-point format, halving
+the memory of activations and (with the right setup) gradients.
+
+**When to use it.** When your hardware supports it. **BF16** is preferred
+for its wider dynamic range; **FP16** is the fallback on GPUs without BF16
+hardware. Enable with `use_mixed_precision=True`.
+
+**Cost.** Minimal — often *faster*, since 16-bit math has higher throughput
+on tensor cores. The risk is numerical: FP16 can underflow without loss
+scaling.
+
+## CPU offloading
+
+**What it does.** Moves tensors that are not immediately needed (such as
+optimizer state or inactive activations) from GPU VRAM to CPU RAM, and
+brings them back just in time.
+
+**When to use it.** When the model still does not fit after checkpointing.
+Enabled by default in `BALANCED` (`enable_offloading=True`). The
+`max_cpu_offload_gb` field caps how much CPU RAM may be used.
+
+**Cost.** PCIe transfer bandwidth. The
+[async offload engine](/advanced/internals) overlaps transfers with compute
+to hide most of this latency.
+
+## Activation tiling
+
+**What it does.** Splits a large activation (notably attention) into smaller
+tiles processed one at a time, so the full tensor never exists at once.
+
+**When to use it.** For attention-heavy models with long sequences. It is
+**off by default** (`enable_tiling=False`) as the more experimental
+technique; turn it on with `enable_tiling=True` or via `AGGRESSIVE` mode.
+
+**Cost.** Some compute overhead from tiled iteration; most effective on
+attention layers.
+
+## 8-bit optimizer
+
+**What it does.** Stores optimizer state (the Adam moments) in 8-bit instead
+of 32-bit, cutting optimizer memory roughly 4×. Implemented via
+`bitsandbytes` (`Adam8bit` / `AdamW8bit`).
+
+**When to use it.** When optimizer state is a large share of your memory —
+common for big models. Enable with `use_8bit_optimizer=True`; requires
+`bitsandbytes` to be installed (see [Installation](/getting-started/installation)).
+
+**Cost.** A small accuracy impact in most cases, and the extra dependency.
+If `bitsandbytes` is missing, MemScale falls back to a standard optimizer.

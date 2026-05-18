@@ -1,0 +1,52 @@
+import { Callout } from 'nextra/components'
+
+# API Reference — Overview
+
+MemScale's public API is intentionally small. Everything below is exported
+from the top-level `memscale` package.
+
+## Public functions
+
+| Function | Purpose | Returns |
+| -------- | ------- | ------- |
+| [`wrap(target, config=None, ...)`](/api/wrap) | Optimize a model or `Trainer` | the same object, with hooks attached |
+| [`optimize(model, optimizer=None, ...)`](/api/optimize) | Context manager for custom training loops | yields the executor |
+| [`detach(model)`](/api/detach) | Remove MemScale from a model | `None` |
+
+## Configuration
+
+| Object | Purpose |
+| ------ | ------- |
+| [`Config`](/api/config) | All optimization settings |
+| `OptimizationMode` | Enum: `CONSERVATIVE`, `BALANCED`, `AGGRESSIVE` |
+
+## Importing
+
+```python
+import memscale
+
+# functions
+from memscale import wrap, optimize, detach
+
+# configuration
+from memscale import Config, OptimizationMode
+```
+
+<Callout type="warning">
+**A note on `apply_all_optimizations`.** Some older drafts referred to an
+`apply_all_optimizations()` helper. **No such function exists** in MemScale
+v1.1.0 — it is not exported by the package and not defined in the public
+API. The supported entry points are `wrap()`, `optimize()`, and `detach()`.
+To optimize a Hugging Face `Trainer`, pass it straight to `wrap()` — see the
+[Hugging Face guide](/guides/huggingface).
+</Callout>
+
+## Two ways in
+
+- **`wrap()`** — the common path. Works on a raw `nn.Module` *or* a Hugging
+  Face `Trainer`. Attaches hooks and returns the object; you keep using it
+  as before.
+- **`optimize()`** — a context manager for hand-written training loops where
+  you want the optimization scoped to a `with` block.
+
+Both are documented in full on their own pages.

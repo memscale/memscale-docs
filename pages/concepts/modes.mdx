@@ -1,0 +1,68 @@
+import { Callout } from 'nextra/components'
+
+# Optimization Modes
+
+A mode is the single highest-level knob in MemScale. It is set through the
+`OptimizationMode` enum and tells the decision engine how aggressively to
+trade throughput for memory.
+
+```python
+from memscale import Config, OptimizationMode
+
+config = Config(mode=OptimizationMode.BALANCED)  # the default
+```
+
+## The three modes
+
+| Mode           | Use case                       | Techniques pulled in              |
+| -------------- | ------------------------------ | --------------------------------- |
+| `CONSERVATIVE` | Small models / large GPUs      | Gradient checkpointing            |
+| `BALANCED`     | Medium models (default)        | Checkpointing + CPU offloading    |
+| `AGGRESSIVE`   | Large models / tight memory    | Full technique stack              |
+
+`BALANCED` is the default when no mode is given.
+
+## How a mode maps to techniques
+
+A mode does not apply techniques directly — it sets the defaults the
+[decision engine](/concepts/decision-engine) starts from, and the engine
+then decides which layers actually receive each technique. The `Config`
+defaults reflect this:
+
+- `enable_checkpointing` — **on** by default
+- `enable_offloading` — **on** by default
+- `enable_tiling` — **off** by default (more experimental)
+- `use_mixed_precision` — **off** by default
+- `use_8bit_optimizer` — **off** by default
+
+Choosing `AGGRESSIVE` raises the engine's willingness to apply the heavier
+techniques (offloading and tiling) to more layers; `CONSERVATIVE` restricts
+it to the cheapest ones.
+
+<Callout type="info">
+You can always override an individual technique on top of a mode — for
+example, `Config(mode=OptimizationMode.BALANCED, use_mixed_precision=True)`.
+The mode is a starting point, not a lock.
+</Callout>
+
+## Predicted vs. measured reduction
+
+Mode names describe *intent*, not a guaranteed percentage — the actual
+reduction depends on the model, batch size, and sequence length. The
+[benchmark suite](/guides/benchmarking) measured **68–76% peak-VRAM
+reduction** across BERT and GPT-2 models on an RTX 3090 with the default
+(balanced) configuration.
+
+<Callout type="warning">
+Treat any single "% reduction" figure as workload-specific. Always measure
+on your own model and hardware before relying on a number.
+</Callout>
+
+## Choosing a mode
+
+- Model nearly fits, you need a little headroom → `CONSERVATIVE`
+- Typical medium model, want a good default → `BALANCED`
+- Model OOMs and must fit → `AGGRESSIVE`
+
+The [Memory Budget guide](/guides/memory-budget) walks through this choice
+by model size.

@@ -1,0 +1,86 @@
+import { Callout } from 'nextra/components'
+
+# `Config`
+
+`Config` holds every optimization setting. Pass it to [`wrap()`](/api/wrap)
+or [`optimize()`](/api/optimize). With no `Config`, MemScale uses
+`Config()` — balanced mode with sensible defaults.
+
+```python
+from memscale import Config, OptimizationMode
+
+config = Config(
+    mode=OptimizationMode.BALANCED,
+    enable_offloading=True,
+    max_cpu_offload_gb=64,
+)
+```
+
+## `OptimizationMode`
+
+An enum with three values — `CONSERVATIVE`, `BALANCED`, `AGGRESSIVE`. See
+[Optimization Modes](/concepts/modes).
+
+## Fields
+
+### Core
+
+| Field                  | Type               | Default            | Description |
+| ---------------------- | ------------------ | ------------------ | ----------- |
+| `mode`                 | `OptimizationMode` | `BALANCED`         | Optimization aggressiveness. |
+| `enable_checkpointing` | `bool`             | `True`             | Apply gradient checkpointing. |
+| `enable_offloading`    | `bool`             | `True`             | Apply CPU offloading. |
+| `enable_tiling`        | `bool`             | `False`            | Apply activation tiling (more experimental). |
+| `use_mixed_precision`  | `bool`             | `False`            | Use BF16/FP16 mixed precision. |
+| `use_8bit_optimizer`   | `bool`             | `False`            | Use an 8-bit optimizer (requires `bitsandbytes`). |
+
+### Memory budget
+
+| Field                    | Type            | Default | Description |
+| ------------------------ | --------------- | ------- | ----------- |
+| `max_cpu_offload_gb`     | `float \| None` | `None`  | Cap on CPU RAM used for offloading. `None` = use available CPU RAM. |
+| `target_gpu_utilization` | `float`         | `0.85`  | Fraction of GPU memory the engine aims to use. |
+| `force_optimize`         | `bool`          | `False` | Optimize even when the model fits comfortably (bypasses the smart-skip). |
+
+### Profiling
+
+| Field                    | Type   | Default | Description |
+| ------------------------ | ------ | ------- | ----------- |
+| `use_static_profiling`   | `bool` | `True`  | Try `torch.fx` static analysis first. |
+| `use_empirical_fallback` | `bool` | `True`  | Fall back to runtime profiling if static fails. |
+| `warmup_steps`           | `int`  | `2`     | Warmup steps for empirical profiling. |
+
+### Observability
+
+| Field                 | Type           | Default | Description |
+| --------------------- | -------------- | ------- | ----------- |
+| `enable_logging`      | `bool`         | `True`  | Log hardware detection and the optimization plan. |
+| `log_file`            | `str \| None`  | `None`  | Log file path. `None` = stdout only. |
+| `observability_port`  | `int \| None`  | `None`  | If set, expose Prometheus metrics on this port. |
+| `verify_correctness`  | `bool`         | `False` | Run a baseline comparison to verify correctness (slow). |
+
+### Experimental
+
+| Field           | Type                  | Default | Description |
+| --------------- | --------------------- | ------- | ----------- |
+| `async_offload` | `bool`                | `False` | Enable the tier-aware async CPU offload engine. |
+| `async_config`  | `AsyncOffloadConfig`  | `None`  | Power-user tuning for the async path. |
+| `auto_policy`   | `bool`                | `False` | Opt in to the v1.2 [ML policy](/advanced/ml-policy) Stage 1. |
+
+<Callout type="info">
+`auto_policy` defaults to `False` — the v1.2 ML policy is **off** unless you
+opt in. With `auto_policy=False`, MemScale uses your `Config` exactly as
+given, which keeps explicit-config runs bit-for-bit reproducible.
+</Callout>
+
+## Example: aggressive with an explicit budget
+
+```python
+config = Config(
+    mode=OptimizationMode.AGGRESSIVE,
+    use_mixed_precision=True,
+    use_8bit_optimizer=True,
+    max_cpu_offload_gb=32,
+)
+model = wrap(model, config)
+```

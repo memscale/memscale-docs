@@ -1,0 +1,58 @@
+# Troubleshooting
+
+Common issues when getting started with MemScale, and how to resolve them.
+
+## `ModuleNotFoundError: No module named 'memscale'`
+
+MemScale is not installed in the active Python environment.
+
+- Confirm the environment: `python -c "import sys; print(sys.executable)"`.
+- Install into that environment: `pip install memscale`.
+- If you use Conda or a virtualenv, make sure it is activated before
+  installing and before running your script.
+
+## `ImportError` mentioning `bitsandbytes`
+
+`bitsandbytes` is an **optional** dependency, used only for 8-bit
+optimizers. You see this when `use_8bit_optimizer=True` is set but the
+package is missing.
+
+- Install it: `pip install bitsandbytes`.
+- Or leave it out and set `use_8bit_optimizer=False` — MemScale will use a
+  standard optimizer instead.
+
+`bitsandbytes` has its own CUDA requirements; check its documentation if the
+install itself fails.
+
+## CUDA out of memory, even with `AGGRESSIVE`
+
+`AGGRESSIVE` mode reduces peak VRAM substantially, but it cannot make an
+arbitrarily large model fit an arbitrarily small GPU.
+
+- **Reduce the batch size.** This is the single most effective lever.
+- **Shorten the sequence length** if your workload allows it.
+- Check that no other process is holding VRAM: `nvidia-smi`.
+- Compare your model size against the [Memory Budget guide](/guides/memory-budget).
+
+## Throughput is too slow
+
+Memory optimizations trade compute for memory — gradient checkpointing
+recomputes activations, offloading moves tensors over PCIe. If the slowdown
+is unacceptable:
+
+- Step **down** a mode: `AGGRESSIVE` → `BALANCED` → `CONSERVATIVE`.
+- If you only need a little headroom, `CONSERVATIVE` recovers memory with
+  the smallest throughput hit.
+- See [Techniques](/concepts/techniques) for the cost profile of each
+  technique.
+
+## A model "fits comfortably" and nothing is optimized
+
+By default the decision engine skips optimization for tiny models on large
+GPUs — there is nothing to gain. To force optimization anyway (for testing
+or benchmarking), set `force_optimize=True` in your [`Config`](/api/config).
+
+## Still stuck?
+
+Check the [FAQ](/resources/faq), or reach out via the
+[contact page](https://app.memscale.id/contact).
