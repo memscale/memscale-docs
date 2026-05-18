@@ -34,7 +34,7 @@ ZeRO stages or sharding strategies before you see a benefit.
 MemScale optimizes for a different goal: **the shortest path from "my model
 OOMs" to "my model trains."** You do not rewrite your loop. You do not pick
 a sharding strategy. You call `wrap()` and keep training as usual. If you
-later want control, the [`Config`](/api/config) object exposes every knob.
+later want control, the [`Config`](/reference/config) object exposes every knob.
 
 This makes MemScale a good fit for single-GPU workstations, lab machines,
 and campus GPUs — where the constraint is one fixed card, not a cluster.
@@ -57,5 +57,5 @@ peak VRAM — a 76% reduction — with no other change to the script.
 ## Where to go next
 
 - **[Quick Start](/getting-started/quickstart)** — get a model optimized in 5 minutes.
-- **[API Reference](/api/overview)** — every public function and its real signature.
+- **[API Reference](/reference/overview)** — every public function and its real signature.
 - **[Core Concepts](/concepts/overview)** — how the decision engine and techniques work.

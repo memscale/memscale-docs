@@ -7,7 +7,7 @@ want to understand the library below the public API.
 
 <Callout type="info">
 Everything on this page is **internal**. Only the names documented in the
-[API Reference](/api/overview) — `wrap`, `optimize`, `detach`, `Config`,
+[API Reference](/reference/overview) — `wrap`, `optimize`, `detach`, `Config`,
 `OptimizationMode` — are the stable public surface. Internal modules can
 change between releases.
 </Callout>
@@ -38,7 +38,7 @@ The `memscale` package is organized into focused subpackages:
    and deterministic.
 3. **`core.executor` — `Executor`.** Applies the plan by attaching hooks,
    and stores itself on the model as `model._memscale_executor` so
-   [`detach()`](/api/detach) can reverse everything.
+   [`detach()`](/reference/detach) can reverse everything.
 
 ## The v1.2 two-stage flow
 
@@ -65,5 +65,5 @@ selection. It is **opt-in** and wrapped so that telemetry can never break a
 
 Because the `Executor` is stored on the model and only *attaches* hooks
 (rather than rewriting weights), optimization is fully reversible — that is
-what makes [`detach()`](/api/detach) and the [`optimize()`](/api/optimize)
+what makes [`detach()`](/reference/detach) and the [`optimize()`](/reference/optimize)
 context manager safe.

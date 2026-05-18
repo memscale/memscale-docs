@@ -17,15 +17,15 @@ User Model
                                                                 Optimized Training
 ```
 
-When you call [`wrap()`](/api/wrap), MemScale runs these stages in order.
+When you call [`wrap()`](/reference/wrap), MemScale runs these stages in order.
 
 ## The three layers
 
 ### 1. User API
 
-The surface you interact with: [`wrap()`](/api/wrap),
-[`optimize()`](/api/optimize), and [`detach()`](/api/detach), configured by a
-[`Config`](/api/config) object. Most users never go below this layer.
+The surface you interact with: [`wrap()`](/reference/wrap),
+[`optimize()`](/reference/optimize), and [`detach()`](/reference/detach), configured by a
+[`Config`](/reference/config) object. Most users never go below this layer.
 
 ### 2. Decision Engine
 
@@ -43,7 +43,7 @@ the same deterministic rule engine.
 The **executor** takes the execution plan and attaches the actual hooks to
 the model — checkpoint wrappers, offload hooks, tiling, precision casts. It
 also stores a handle on the model (`model._memscale_executor`) so that
-[`detach()`](/api/detach) can cleanly reverse everything.
+[`detach()`](/reference/detach) can cleanly reverse everything.
 
 ## Profiling
 

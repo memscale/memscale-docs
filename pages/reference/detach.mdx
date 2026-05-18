@@ -13,7 +13,7 @@ memscale.detach(model)
 
 | Parameter | Type        | Default | Description |
 | --------- | ----------- | ------- | ----------- |
-| `model`   | `nn.Module` | —       | A model previously passed to [`wrap()`](/api/wrap). |
+| `model`   | `nn.Module` | —       | A model previously passed to [`wrap()`](/reference/wrap). |
 
 ## Returns
 
@@ -21,7 +21,7 @@ memscale.detach(model)
 
 ## Behavior
 
-`detach()` looks for the executor handle that [`wrap()`](/api/wrap) stored on
+`detach()` looks for the executor handle that [`wrap()`](/reference/wrap) stored on
 the model (`model._memscale_executor`):
 
 - **If present** — the executor detaches all hooks, the handle is removed,
@@ -42,7 +42,7 @@ memscale.detach(model)   # model is now back to its original form
 
 ## When you do not need it
 
-If you used the [`optimize()`](/api/optimize) context manager, detachment
+If you used the [`optimize()`](/reference/optimize) context manager, detachment
 happens automatically when the `with` block exits — calling `detach()`
 yourself is unnecessary in that case.
 

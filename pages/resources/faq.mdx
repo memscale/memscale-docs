@@ -7,7 +7,7 @@ training code and choose strategies — ZeRO stages, sharding, accelerator
 config — before you see a benefit.
 
 MemScale optimizes for the shortest path from "my model OOMs" to "my model
-trains." You call [`wrap()`](/api/wrap) and keep your training loop
+trains." You call [`wrap()`](/reference/wrap) and keep your training loop
 unchanged. It is focused on **single-GPU** memory optimization (see the
 [Multi-GPU guide](/guides/multi-gpu)), where it picks per-layer techniques
 for you automatically. If you need cluster-scale sharding, a framework like

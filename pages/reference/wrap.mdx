@@ -29,7 +29,7 @@ memscale.wrap(
 
 <Callout type="warning">
 `wrap()` does **not** take an `optimizer` argument. To optimize a training
-loop together with its optimizer, use [`optimize()`](/api/optimize) instead.
+loop together with its optimizer, use [`optimize()`](/reference/optimize) instead.
 </Callout>
 
 ## Returns
@@ -92,4 +92,4 @@ trainer.train()
 - For HF autoregressive models, `wrap()` automatically sets
   `config.use_cache = False` when checkpointing is enabled, to avoid a
   recompute shape mismatch. It logs an info message when it does this.
-- To reverse `wrap()`, call [`detach()`](/api/detach).
+- To reverse `wrap()`, call [`detach()`](/reference/detach).

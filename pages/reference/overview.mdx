@@ -9,15 +9,15 @@ from the top-level `memscale` package.
 
 | Function | Purpose | Returns |
 | -------- | ------- | ------- |
-| [`wrap(target, config=None, ...)`](/api/wrap) | Optimize a model or `Trainer` | the same object, with hooks attached |
-| [`optimize(model, optimizer=None, ...)`](/api/optimize) | Context manager for custom training loops | yields the executor |
-| [`detach(model)`](/api/detach) | Remove MemScale from a model | `None` |
+| [`wrap(target, config=None, ...)`](/reference/wrap) | Optimize a model or `Trainer` | the same object, with hooks attached |
+| [`optimize(model, optimizer=None, ...)`](/reference/optimize) | Context manager for custom training loops | yields the executor |
+| [`detach(model)`](/reference/detach) | Remove MemScale from a model | `None` |
 
 ## Configuration
 
 | Object | Purpose |
 | ------ | ------- |
-| [`Config`](/api/config) | All optimization settings |
+| [`Config`](/reference/config) | All optimization settings |
 | `OptimizationMode` | Enum: `CONSERVATIVE`, `BALANCED`, `AGGRESSIVE` |
 
 ## Importing

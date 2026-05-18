@@ -5,7 +5,7 @@ are two ways to apply MemScale. Pick whichever fits your code.
 
 ## Option A — `optimize()` context manager
 
-[`optimize()`](/api/optimize) scopes the optimization to a `with` block and
+[`optimize()`](/reference/optimize) scopes the optimization to a `with` block and
 detaches automatically when the block exits. It is the most natural fit for
 a hand-written loop.
 
@@ -38,7 +38,7 @@ estimate.
 ## Option B — `wrap()`
 
 If you prefer the optimization to persist beyond a single block, use
-[`wrap()`](/api/wrap) and call [`detach()`](/api/detach) when you are done.
+[`wrap()`](/reference/wrap) and call [`detach()`](/reference/detach) when you are done.
 
 ```python
 import memscale
@@ -67,7 +67,7 @@ memscale.detach(model)   # restore the model for inference / eval
 
 ## With a custom config
 
-Both accept a [`Config`](/api/config):
+Both accept a [`Config`](/reference/config):
 
 ```python
 from memscale import Config, OptimizationMode

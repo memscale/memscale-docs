@@ -2,7 +2,7 @@ export default {
   "index": "Introduction",
   "getting-started": "Getting Started",
   "concepts": "Core Concepts",
-  "api": "API Reference",
+  "reference": "API Reference",
   "guides": "Guides",
   "advanced": "Advanced",
   "resources": "Resources"

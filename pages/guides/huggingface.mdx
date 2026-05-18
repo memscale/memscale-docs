@@ -3,7 +3,7 @@ import { Callout } from 'nextra/components'
 # Hugging Face Trainer
 
 MemScale integrates with the Hugging Face `Trainer` directly — you pass the
-`Trainer` to [`wrap()`](/api/wrap) and keep calling `.train()` as usual.
+`Trainer` to [`wrap()`](/reference/wrap) and keep calling `.train()` as usual.
 
 <Callout type="warning">
 There is no `apply_all_optimizations()` function. Earlier drafts mentioned
@@ -67,6 +67,6 @@ throughput in the standard `Trainer` logs.
 ## Tips
 
 - Pass a representative `sample_input` to `wrap()` for more accurate
-  profiling — see [`wrap()`](/api/wrap).
+  profiling — see [`wrap()`](/reference/wrap).
 - If you write your own training loop instead of using `Trainer`, see the
   [PyTorch Training guide](/guides/pytorch-trainer).
