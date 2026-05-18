@@ -1,4 +1,4 @@
-{
+export default {
   "ml-policy": "ML Policy (Experimental)",
   "architecture": "Architecture",
   "internals": "Internals"

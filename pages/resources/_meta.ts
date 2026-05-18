@@ -1,4 +1,4 @@
-{
+export default {
   "gpu-compatibility": "GPU Compatibility",
   "changelog": "Changelog",
   "faq": "FAQ"

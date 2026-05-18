@@ -1,4 +1,4 @@
-{
+export default {
   "installation": "Installation",
   "quickstart": "Quick Start",
   "first-optimization": "First Optimization",
