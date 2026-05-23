@@ -3,8 +3,8 @@ import { Callout } from 'nextra/components'
 # Multi-GPU
 
 <Callout type="warning">
-**MemScale v1.1.0 is focused on single-GPU training.** Multi-GPU support is
-on the roadmap but not a v1.1 feature. Read this page before using MemScale
+**MemScale is focused on single-GPU training.** Multi-GPU support is
+on the roadmap but not yet supported. Read this page before using MemScale
 in a multi-GPU job.
 </Callout>
 
@@ -33,7 +33,7 @@ model = memscale.wrap(model)
 
 For `DistributedDataParallel` or multi-process data-parallel training,
 MemScale's per-layer memory optimizations have **not** been validated end to
-end in v1.1. Combining MemScale with DDP, FSDP, or DeepSpeed is **not a
+end on multi-GPU. Combining MemScale with DDP, FSDP, or DeepSpeed is **not a
 supported configuration** in this release. If you experiment with it, treat
 results as unverified and measure carefully.
 

@@ -5,21 +5,29 @@ import { Callout } from 'nextra/components'
 A summary of MemScale releases. The authoritative, always-current changelog
 lives at **[memscale.id/changelog](https://memscale.id/changelog/)**.
 
-## v1.2.0 — Unreleased — "Intelligence Foundation"
+## v1.2.0 — 2026-05-21 — "Intelligence Foundation"
 
-<Callout type="warning">
-**Experimental / in development.** v1.2 is a draft cycle targeted for the
-end of June 2026. Nothing in it is released, and the
-[ML policy](/advanced/ml-policy) ships **off by default**.
+<Callout type="info">
+Released. The [ML policy](/advanced/ml-policy) ships **off by default**
+(`auto_policy=False`) — default behavior is bit-for-bit identical to v1.1.
 </Callout>
 
-The v1.2 cycle builds the data and framework foundation for an ML-trained
-optimization policy:
+The v1.2 cycle adds an ML-assisted optimization policy framework on top of
+the deterministic rule engine, plus the verification work behind it:
 
-- A two-stage optimization flow — Stage 1 strategy selection, Stage 2 the
-  existing rule engine. Opt-in via `Config.auto_policy=True`.
-- Expanded **opt-in** v2 telemetry: bucketed, non-identifying model and
-  decision metadata to serve as a training corpus.
+- **Two-stage optimization flow** — Stage 1 strategy selection (opt-in ML
+  policy via `Config.auto_policy=True`), Stage 2 the existing deterministic
+  rule engine. A trained policy artifact ships with this release.
+- **Expanded opt-in v2 telemetry** — bucketed, non-identifying model and
+  decision metadata as a training corpus. Off unless you enable it.
+- **Empirical efficacy sweep** — a 25-configuration LHS sweep on an RTX 3090
+  (`apply_all_optimizations` stack) measured a **median ~59% peak-VRAM
+  reduction** (range 51–70%), reconciling the headline best-case figures with
+  typical diverse workloads.
+- **Cython memory-safety audit** — 48 modules audited and hardened for the
+  binary-distributed build.
+- **Multi-platform wheels** — 9 wheels across Linux, Windows, and macOS
+  (CPython 3.10/3.11/3.12).
 
 ## v1.1.0 — 2026-05-17 — "The Performance Release"
 

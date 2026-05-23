@@ -4,8 +4,10 @@ import { Callout } from 'nextra/components'
 
 <Callout type="warning">
 **Experimental.** The ML policy ships with **v1.2** and is **off by
-default** (`auto_policy=False`). v1.1.0 — the current release — uses the
-rule-based engine only. This page documents intended v1.2 behavior.
+default** (`auto_policy=False`). With the default config, MemScale uses the
+rule-based engine only — bit-for-bit the same as v1.1. This page documents
+the v1.2 two-stage policy, which ships in v1.2.0 but stays off unless you
+opt in.
 </Callout>
 
 ## Why a policy stage at all
@@ -67,8 +69,10 @@ Every strategy decision records where it came from, via `decision_source`:
 
 When `auto_policy=True` and the ML artifact is not available, MemScale
 raises `PolicyFallbackNeeded` internally and falls back to the rule-based
-policy — recorded as `rule_fallback`. This is the expected path until a
-trained artifact ships.
+policy — recorded as `rule_fallback`. Until you opt in with
+`auto_policy=True`, this is the default path. When the ML policy is enabled
+and the trained artifact (shipped in v1.2.0) is present, the strategy is
+recorded as `ml` instead.
 
 ## Honest framing
 

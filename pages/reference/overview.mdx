@@ -32,12 +32,14 @@ from memscale import wrap, optimize, detach
 from memscale import Config, OptimizationMode
 ```
 
-<Callout type="warning">
-**A note on `apply_all_optimizations`.** Some older drafts referred to an
-`apply_all_optimizations()` helper. **No such function exists** in MemScale
-v1.1.0 — it is not exported by the package and not defined in the public
-API. The supported entry points are `wrap()`, `optimize()`, and `detach()`.
-To optimize a Hugging Face `Trainer`, pass it straight to `wrap()` — see the
+<Callout type="info">
+**`wrap()` vs `apply_all_optimizations`.** `wrap()` applies checkpointing and
+CPU offload — the lightweight path. For the headline VRAM reductions, use
+**`apply_all_optimizations(model, optimizer)`**, which adds BF16 mixed
+precision and 8-bit Adam on top; it returns an optimized `(model, optimizer)`
+pair. It is exported from the package and is what the
+[benchmark suite](/guides/benchmarking) measures. To optimize a Hugging Face
+`Trainer`, pass it straight to `wrap()` — see the
 [Hugging Face guide](/guides/huggingface).
 </Callout>
 

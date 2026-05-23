@@ -19,7 +19,8 @@ in v1.1.0 as the basis for the project's committed, reproducible numbers.
 
 ## Canonical results
 
-These are the v1.1.0 figures, measured on an **NVIDIA RTX 3090 (24 GB)**.
+These figures are measured on an **NVIDIA RTX 3090 (24 GB)** using the full
+`apply_all_optimizations` stack (checkpointing + offload + BF16 + 8-bit Adam).
 Peak training VRAM is compared with and without MemScale:
 
 | Model        | Params | Batch × Seq | Baseline VRAM | MemScale VRAM | Reduction |
@@ -54,8 +55,9 @@ torch.cuda.reset_peak_memory_stats()
 run_one_training_step(model)            # your own step
 baseline = torch.cuda.max_memory_allocated() / 1e9
 
-# --- with MemScale ---
-model = memscale.wrap(model)
+# --- with MemScale (full stack, matches the table above) ---
+optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
+model, optimizer = memscale.apply_all_optimizations(model, optimizer)
 torch.cuda.reset_peak_memory_stats()
 run_one_training_step(model)
 optimized = torch.cuda.max_memory_allocated() / 1e9

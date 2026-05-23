@@ -50,8 +50,9 @@ The mode is a starting point, not a lock.
 Mode names describe *intent*, not a guaranteed percentage — the actual
 reduction depends on the model, batch size, and sequence length. The
 [benchmark suite](/guides/benchmarking) measured **68–76% peak-VRAM
-reduction** across BERT and GPT-2 models on an RTX 3090 with the default
-(balanced) configuration.
+reduction** across BERT and GPT-2 models on an RTX 3090 using the full
+`apply_all_optimizations` stack (not a plain `wrap()` call, which omits BF16
+and 8-bit Adam).
 
 <Callout type="warning">
 Treat any single "% reduction" figure as workload-specific. Always measure

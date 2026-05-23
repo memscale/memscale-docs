@@ -19,11 +19,11 @@ and 8-bit optimizers — but it chooses *which* technique to apply to *which*
 layer for you. The decision is made by a deterministic, rule-based engine,
 so the same model and hardware always produce the same plan.
 
-The current release is **v1.1.0 ("The Performance Release")**, published
-2026-05-17. It ships empirically-backed benchmark numbers (see
-[Benchmarking](/guides/benchmarking)) and an experimental async CPU offload
-engine. v1.2 is in development and adds an opt-in
-[ML-assisted policy](/advanced/ml-policy) on top of the existing rule engine.
+The current release is **v1.2.0 ("Intelligence Foundation")**, published
+2026-05-21. It ships an opt-in [ML-assisted policy](/advanced/ml-policy)
+framework on top of the existing rule engine (off by default), plus the
+empirically-backed benchmark numbers (see [Benchmarking](/guides/benchmarking))
+and experimental async CPU offload from v1.1.
 
 ## Why MemScale?
 
@@ -43,16 +43,30 @@ and campus GPUs — where the constraint is one fixed card, not a cluster.
 
 ```python
 import memscale
+import torch
 from transformers import AutoModelForCausalLM
 
 model = AutoModelForCausalLM.from_pretrained("gpt2-medium")
-model = memscale.wrap(model)   # profiles + attaches optimization hooks
+optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
+
+# full optimization stack: checkpointing + offload + BF16 + 8-bit Adam
+model, optimizer = memscale.apply_all_optimizations(model, optimizer)
 
 # train exactly as you would without MemScale
 ```
 
 On an RTX 3090, GPT-2 Medium training drops from **10.87 GB to 2.61 GB**
-peak VRAM — a 76% reduction — with no other change to the script.
+peak VRAM — a 76% reduction.[^vram] The single `wrap()` call still works for
+the lightest setup (checkpointing + offload only); the headline reductions
+come from `apply_all_optimizations`, which adds BF16 and 8-bit Adam on top.
+
+[^vram]: VRAM reduction is workload-dependent: **up to ~76% best case,
+    typically ~59% median** across 25 measured configurations on an RTX 3090.
+    Highest (~70%) on small-batch / short-sequence runs, where optimizer and
+    parameter state dominate peak memory; lowest (~51%) on large-batch /
+    long-sequence runs, where activations dominate. These require the full
+    optimization stack (`apply_all_optimizations`) — a plain `wrap()` call
+    yields only a small reduction.
 
 ## Where to go next
 
