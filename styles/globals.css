@@ -262,12 +262,15 @@ html.dark .ms-footer a:hover {
 }
 
 /* =========================== HERO ================================= */
+/* Contained rounded panel — no negative margins, so it can never cause
+   horizontal scroll regardless of Nextra's responsive content padding. */
 .ms-hero {
   position: relative;
   overflow: hidden;
-  margin: -1.5rem -1.5rem 2.5rem;
-  padding: 5.5rem 1.5rem 4.5rem;
-  border-bottom: 1px solid rgba(var(--ms-mint-rgb), 0.14);
+  margin: 0 0 2.5rem;
+  padding: 4.5rem 1.5rem 3.75rem;
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.16);
+  border-radius: 16px;
   background:
     radial-gradient(
       900px 380px at 50% -120px,
@@ -396,8 +399,9 @@ html.dark .ms-footer a:hover {
 
 @media (max-width: 640px) {
   .ms-hero {
-    padding: 3.5rem 1rem 3rem;
-    margin: -1.5rem -1rem 2rem;
+    padding: 3rem 1.1rem 2.75rem;
+    margin: 0 0 2rem;
+    border-radius: 14px;
   }
 }
 
