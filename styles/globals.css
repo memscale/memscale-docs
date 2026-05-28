@@ -1,0 +1,423 @@
+/* MemScale docs — immersive theme overrides.
+   Loaded AFTER nextra-theme-docs/style.css so these win.
+   Prefer overriding Nextra's documented CSS variables over !important. */
+
+:root {
+  --ms-mint: #00e0b8;
+  --ms-mint-rgb: 0, 224, 184;
+  --ms-navy: #0b1220;
+  --ms-deep-bg: #070d18;
+  --ms-deep-bg-rgb: 7, 13, 24;
+  --ms-ink: #e6f2f0;
+
+  /* Drive Nextra's accent system toward brand mint (hue/sat also set in
+     theme.config color). Lightness tuned for mint on dark. */
+  --nextra-primary-hue: 168deg;
+  --nextra-primary-saturation: 100%;
+  --nextra-primary-lightness: 42%;
+}
+
+/* ----- Dark surface: deep-bg everywhere Nextra reads --nextra-bg ----- */
+html.dark {
+  --nextra-bg: var(--ms-deep-bg-rgb);
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: var(--ms-deep-bg);
+  color: var(--ms-ink);
+}
+
+/* Calm, STATIC ambience behind articles: a faint top glow + dot grid.
+   No animation, no canvas — that lives only in the index hero. */
+html.dark body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      1100px 460px at 50% -180px,
+      rgba(var(--ms-mint-rgb), 0.08),
+      transparent 70%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    );
+  background-size: 100% 100%, 26px 26px;
+}
+
+/* ---------------- Typography: Sora display, mono code ---------------- */
+.nextra-content h1,
+.nextra-content h2,
+.nextra-content h3,
+.nextra-content h4,
+.nextra-content h5,
+.nextra-content h6,
+.nextra-nav-container h1 {
+  font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+html.dark .nextra-content h1,
+html.dark .nextra-content h2 {
+  color: #f2fbf9;
+}
+
+code,
+kbd,
+pre,
+.nextra-code {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ------------------------------ Links ------------------------------- */
+html.dark .nextra-content a {
+  color: var(--ms-mint);
+  text-decoration-color: rgba(var(--ms-mint-rgb), 0.4);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+html.dark .nextra-content a:hover {
+  color: #4ff0d6;
+  text-decoration-color: var(--ms-mint);
+}
+
+/* ------------- Code blocks: glass + glowing mint border -------------
+   Border the outer div.nextra-code so it wraps pre + copy button. */
+html.dark .nextra-content div.nextra-code {
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.18);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(var(--ms-mint-rgb), 0.04),
+    0 8px 28px rgba(0, 0, 0, 0.35);
+}
+html.dark .nextra-content div.nextra-code pre {
+  background-color: rgba(11, 18, 32, 0.7) !important;
+}
+
+/* inline code chip */
+html.dark .nextra-content :not(pre) > code {
+  background-color: rgba(var(--ms-mint-rgb), 0.08);
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.16);
+  color: #b8f5e8;
+}
+
+/* --------- Callout: glass panel; mint for info, amber for warning ---
+   Keep the semantic warning accent — only the surface becomes glass. */
+html.dark .nextra-callout {
+  background-color: rgba(11, 18, 32, 0.6) !important;
+  border-color: rgba(var(--ms-mint-rgb), 0.18) !important;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+/* info (Nextra applies _bg-blue-100) */
+html.dark .nextra-callout._bg-blue-100 {
+  border-left: 3px solid var(--ms-mint) !important;
+}
+/* warning (Nextra applies _bg-yellow-50) — preserve the amber signal */
+html.dark .nextra-callout._bg-yellow-50 {
+  border-color: rgba(245, 200, 80, 0.22) !important;
+  border-left: 3px solid #f5c850 !important;
+}
+
+/* ----------------------- Cards: glass + mint ----------------------- */
+html.dark .nextra-card {
+  background-color: rgba(11, 18, 32, 0.5);
+  border-color: rgba(var(--ms-mint-rgb), 0.14);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+html.dark .nextra-card:hover {
+  border-color: rgba(var(--ms-mint-rgb), 0.45);
+  box-shadow: 0 0 0 1px rgba(var(--ms-mint-rgb), 0.2),
+    0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* ------------------------ Navbar + footer -------------------------- */
+html.dark .nextra-nav-container {
+  border-bottom: 1px solid rgba(var(--ms-mint-rgb), 0.12);
+}
+html.dark .nextra-sidebar-container {
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================================
+   SIGNATURE TOUCH (unique to docs, not the static site):
+   1) active sidebar item — mint left bar + subtle slide
+   2) animated mint underline on heading-anchor hover
+   ============================================================ */
+
+/* Sidebar links: reserve space so the slide has somewhere to go */
+.nextra-sidebar-container a.nextra-focus {
+  position: relative;
+  transition: padding-left 0.18s ease, color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+/* active item — Nextra v3 marks it with the `_bg-primary-100` utility
+   (no aria-current / .active). `_font-semibold` is also active-only. */
+html.dark .nextra-sidebar-container a.nextra-focus._bg-primary-100 {
+  color: var(--ms-mint);
+  background-color: rgba(var(--ms-mint-rgb), 0.08);
+  padding-left: 1rem;
+  box-shadow: inset 3px 0 0 0 var(--ms-mint);
+}
+html.dark .nextra-sidebar-container a.nextra-focus:hover {
+  background-color: rgba(var(--ms-mint-rgb), 0.06);
+}
+
+/* TOC active link in mint */
+html.dark .nextra-toc a:hover,
+html.dark .nextra-toc a.active,
+html.dark .nextra-toc a[aria-current='true'] {
+  color: var(--ms-mint);
+}
+
+/* Heading anchor hover: animated mint underline that grows in */
+.nextra-content h2 > a,
+.nextra-content h3 > a {
+  position: relative;
+}
+.nextra-content h2 > a::after,
+.nextra-content h3 > a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 2px;
+  width: 0;
+  background: var(--ms-mint);
+  transition: width 0.25s ease;
+}
+.nextra-content h2:hover > a::after,
+.nextra-content h3:hover > a::after {
+  width: 100%;
+}
+
+/* ----------------------- Focus visibility -------------------------- */
+.nextra-focusable:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ms-mint);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduced motion: kill the signature transitions too */
+@media (prefers-reduced-motion: reduce) {
+  .nextra-sidebar-container a.nextra-focus,
+  .nextra-content h2 > a::after,
+  .nextra-content h3 > a::after,
+  html.dark .nextra-card {
+    transition: none !important;
+  }
+}
+
+/* ---------------- Logo / nav / footer (theme.config) --------------- */
+.ms-logo {
+  display: inline-flex;
+  align-items: center;
+}
+.ms-logo img {
+  filter: drop-shadow(0 0 10px rgba(var(--ms-mint-rgb), 0.45));
+}
+.ms-logo__tag {
+  margin-left: 9px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ms-mint);
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.35);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+html.dark .ms-nav-home {
+  color: #9fb4b0;
+  transition: color 0.15s ease;
+}
+html.dark .ms-nav-home:hover {
+  color: var(--ms-mint);
+}
+
+.ms-footer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+.ms-footer__copy {
+  opacity: 0.7;
+}
+html.dark .ms-footer a {
+  color: #9fb4b0;
+  transition: color 0.15s ease;
+}
+html.dark .ms-footer a:hover {
+  color: var(--ms-mint);
+}
+
+/* =========================== HERO ================================= */
+/* Contained rounded panel — no negative margins, so it can never cause
+   horizontal scroll regardless of Nextra's responsive content padding. */
+.ms-hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 2.5rem;
+  padding: 4.5rem 1.5rem 3.75rem;
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.16);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      900px 380px at 50% -120px,
+      rgba(var(--ms-mint-rgb), 0.16),
+      transparent 70%
+    ),
+    linear-gradient(180deg, var(--ms-navy), var(--ms-deep-bg));
+  isolation: isolate;
+}
+
+.ms-hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.ms-hero__glow {
+  position: absolute;
+  left: 50%;
+  top: -120px;
+  width: 540px;
+  height: 540px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    circle,
+    rgba(var(--ms-mint-rgb), 0.18),
+    transparent 60%
+  );
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.ms-hero__inner {
+  max-width: 52rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ms-hero__eyebrow {
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  padding: 0.3rem 0.85rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ms-mint);
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.35);
+  border-radius: 999px;
+  background: rgba(var(--ms-mint-rgb), 0.06);
+}
+
+.ms-hero__title {
+  font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.25rem;
+  color: #f4fdfb;
+}
+.ms-hero__title-accent {
+  color: var(--ms-mint);
+  text-shadow: 0 0 28px rgba(var(--ms-mint-rgb), 0.45);
+}
+
+.ms-hero__subtitle {
+  max-width: 38rem;
+  margin: 0 auto 2rem;
+  font-size: 1.075rem;
+  line-height: 1.6;
+  color: #c4d6d2;
+}
+
+.ms-hero__actions {
+  display: flex;
+  gap: 0.85rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ms-hero__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, border-color 0.15s ease;
+}
+.ms-hero__btn--primary {
+  color: #0b1220;
+  background: var(--ms-mint);
+  box-shadow: 0 8px 26px rgba(var(--ms-mint-rgb), 0.32);
+}
+/* The hero renders inside .nextra-content, so the `html.dark
+   .nextra-content a` link-color rule (0,2,2) would otherwise repaint the
+   label mint-on-mint (invisible). These selectors out-specify it and keep
+   the label navy — navy on mint is ~11:1 contrast (WCAG AA/AAA). */
+.nextra-content a.ms-hero__btn--primary,
+html.dark .nextra-content a.ms-hero__btn--primary {
+  color: #0b1220;
+}
+.ms-hero__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 34px rgba(var(--ms-mint-rgb), 0.45);
+}
+.ms-hero__btn--ghost {
+  color: var(--ms-ink);
+  border: 1px solid rgba(var(--ms-mint-rgb), 0.4);
+  background: rgba(var(--ms-mint-rgb), 0.04);
+}
+.ms-hero__btn--ghost:hover {
+  transform: translateY(-2px);
+  border-color: var(--ms-mint);
+  background: rgba(var(--ms-mint-rgb), 0.1);
+}
+
+.ms-hero__stat {
+  margin: 2.25rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: #8fa6a2;
+}
+.ms-hero__stat-num {
+  color: var(--ms-mint);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .ms-hero {
+    padding: 3rem 1.1rem 2.75rem;
+    margin: 0 0 2rem;
+    border-radius: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-hero__btn {
+    transition: none;
+  }
+  .ms-hero__btn:hover {
+    transform: none;
+  }
+}
