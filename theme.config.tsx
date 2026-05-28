@@ -9,30 +9,48 @@ import { DocsThemeConfig } from 'nextra-theme-docs'
 //   useNextSeoProps (removed) -> head meta + per-page frontmatter titles
 const config: DocsThemeConfig = {
   logo: (
-    <>
+    <span className="ms-logo">
       <img
         src="/memscale-mark.svg"
         alt="MemScale"
-        style={{ height: 24, marginRight: 8 }}
+        style={{ height: 26, marginRight: 9 }}
       />
-      <span style={{ fontWeight: 700, fontSize: 18 }}>MemScale</span>
-      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 8, opacity: 0.6 }}>
-        Docs
+      <span
+        style={{
+          fontFamily: 'var(--font-sora), ui-sans-serif, system-ui, sans-serif',
+          fontWeight: 700,
+          fontSize: 18,
+          letterSpacing: '-0.01em',
+        }}
+      >
+        MemScale
       </span>
-    </>
+      <span className="ms-logo__tag">Docs</span>
+    </span>
   ),
   project: {
     link: 'https://github.com/memscale/Memscale',
   },
   chat: {
     link: 'https://memscale.id',
-    icon: <span style={{ fontWeight: 500, fontSize: 14 }}>memscale.id</span>,
+    icon: (
+      <span
+        className="ms-nav-home"
+        style={{
+          fontFamily: 'var(--font-mono), ui-monospace, monospace',
+          fontWeight: 500,
+          fontSize: 13,
+        }}
+      >
+        memscale.id
+      </span>
+    ),
   },
   docsRepositoryBase: 'https://github.com/memscale/memscale-docs/tree/main',
   footer: {
     content: (
-      <div style={{ display: 'flex', gap: 16, fontSize: 14, flexWrap: 'wrap' }}>
-        <span>© 2026 MemScale</span>
+      <div className="ms-footer">
+        <span className="ms-footer__copy">© 2026 MemScale</span>
         <a href="https://memscale.id/privacy/">Privacy</a>
         <a href="https://memscale.id/terms/">Terms</a>
         <a href="https://memscale.id/license/">License</a>
