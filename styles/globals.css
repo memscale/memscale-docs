@@ -367,9 +367,17 @@ html.dark .ms-footer a:hover {
     background-color 0.15s ease, border-color 0.15s ease;
 }
 .ms-hero__btn--primary {
-  color: #04221c;
+  color: #0b1220;
   background: var(--ms-mint);
   box-shadow: 0 8px 26px rgba(var(--ms-mint-rgb), 0.32);
+}
+/* The hero renders inside .nextra-content, so the `html.dark
+   .nextra-content a` link-color rule (0,2,2) would otherwise repaint the
+   label mint-on-mint (invisible). These selectors out-specify it and keep
+   the label navy — navy on mint is ~11:1 contrast (WCAG AA/AAA). */
+.nextra-content a.ms-hero__btn--primary,
+html.dark .nextra-content a.ms-hero__btn--primary {
+  color: #0b1220;
 }
 .ms-hero__btn--primary:hover {
   transform: translateY(-2px);
